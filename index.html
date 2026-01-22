@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Medidor Oficial de Estresse</title>
+
+<style>
+body {
+  background: #0d0d0d;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 30px;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+.cartoon {
+  margin: 30px auto;
+  width: 160px;
+}
+
+.face {
+  width: 160px;
+  height: 160px;
+  background: #ffd966;
+  border-radius: 50%;
+  position: relative;
+}
+
+.eye {
+  width: 20px;
+  height: 20px;
+  background: #000;
+  border-radius: 50%;
+  position: absolute;
+  top: 50px;
+}
+
+.eye.left { left: 45px; }
+.eye.right { right: 45px; }
+
+.mouth {
+  width: 60px;
+  height: 10px;
+  border-radius: 20px;
+  background: #000;
+  position: absolute;
+  bottom: 45px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.sweat {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  font-size: 22px;
+  display: none;
+}
+
+.bar {
+  width: 90%;
+  max-width: 400px;
+  height: 25px;
+  border: 2px solid #555;
+  border-radius: 20px;
+  margin: 20px auto;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00e5ff, #ff0055);
+  transition: width 0.5s;
+}
+
+.text {
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.timer {
+  margin-top: 15px;
+  font-size: 16px;
+  color: #00e5ff;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔥 Nível de Estresse da Semana 🔥</h1>
+
+<div class="cartoon">
+  <div class="face" id="face">
+    <div class="eye left"></div>
+    <div class="eye right"></div>
+    <div class="mouth" id="mouth"></div>
+    <div class="sweat" id="sweat">💧</div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="fill" id="fill"></div>
+</div>
+
+<div class="text" id="text"></div>
+<div class="timer" id="timer"></div>
+
+<audio id="sextaSound">
+  <source src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg">
+</audio>
+
+<script>
+function calcularProgresso() {
+  const agora = new Date();
+
+  const inicio = new Date();
+  inicio.setDate(agora.getDate() - agora.getDay() + 1);
+  inicio.setHours(0,0,0,0);
+
+  const sexta = new Date(inicio);
+  sexta.setDate(inicio.getDate() + 4);
+  sexta.setHours(18,0,0,0);
+
+  const total = sexta - inicio;
+  const atual = agora - inicio;
+
+  let pct = Math.min(100, Math.max(0, (atual / total) * 100));
+
+  document.getElementById("fill").style.width = pct + "%";
+
+  const mouth = document.getElementById("mouth");
+  const text = document.getElementById("text");
+  const sweat = document.getElementById("sweat");
+
+  if (pct < 30) {
+    mouth.style.height = "8px";
+    text.innerText = "Tá suave 😌";
+    sweat.style.display = "none";
+  } 
+  else if (pct < 60) {
+    mouth.style.height = "14px";
+    text.innerText = "Já começou a irritar 😐";
+    sweat.style.display = "none";
+  } 
+  else if (pct < 90) {
+    mouth.style.height = "22px";
+    text.innerText = "Por que a sexta não chega??? 😵‍💫";
+    sweat.style.display = "block";
+  } 
+  else {
+    mouth.style.height = "30px";
+    text.innerText = "SEXTOU OU SURTEI 🤯";
+    sweat.style.display = "block";
+    document.getElementById("sextaSound").play();
+  }
+
+  // contador regressivo
+  const restante = sexta - agora;
+  if (restante > 0) {
+    const h = Math.floor(restante / 3600000);
+    const m = Math.floor((restante % 3600000) / 60000);
+    const s = Math.floor((restante % 60000) / 1000);
+    document.getElementById("timer").innerText =
+      `⏳ Faltam ${h}h ${m}m ${s}s para a sexta`;
+  } else {
+    document.getElementById("timer").innerText = "🎉 SEXTA-FEIRA CHEGOU!";
+  }
+}
+
+setInterval(calcularProgresso, 1000);
+calcularProgresso();
+</script>
+
+</body>
+</html>
