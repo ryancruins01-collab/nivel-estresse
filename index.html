@@ -1,44 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Sábado 😏</title>
+
+<style>
+body {
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-family: Impact, Arial Black, sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.container {
+  padding: 20px;
+}
+
+.text {
+  font-size: 42px;
+  line-height: 1.15;
+  margin-bottom: 25px;
+}
+
+.timer {
+  font-size: 26px;
+  color: #ff2d75;
+}
+
+.hint {
+  margin-top: 20px;
+  font-size: 14px;
+  opacity: 0.7;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="text">
+    VIVI… SE PREPARA 😏<br>
+    SÁBADO É SEM MISERICÓRDIA
+  </div>
+
+  <div class="timer" id="timer"></div>
+  <div class="hint">👆 toca na tela</div>
+</div>
+
 <script>
-let audioUnlocked = false;
+let unlocked = false;
 let audio;
 
-// som vocal/cartoon permitido
+// som LONGO, engraçado, permitido e leve
 const soundUrl =
-  "https://actions.google.com/sounds/v1/human_voices/ahh_female.ogg";
+  "https://actions.google.com/sounds/v1/cartoon/descending_whistle_3.ogg";
 
 function unlockAudio() {
-  if (!audioUnlocked) {
+  if (!unlocked) {
     audio = new Audio(soundUrl);
     audio.volume = 1.0;
     audio.play().then(() => {
       audio.pause();
       audio.currentTime = 0;
-      audioUnlocked = true;
+      unlocked = true;
     }).catch(() => {});
   }
 }
 
-// repete o "aiiiihhh" várias vezes
-function playRepeatedMoan(times = 3, delay = 450) {
-  if (!audioUnlocked) {
+function playRepeatedSound() {
+  if (!unlocked) {
     unlockAudio();
     return;
   }
 
   let count = 0;
-
-  const interval = setInterval(() => {
+  const repeat = setInterval(() => {
     audio.currentTime = 0;
     audio.play();
     count++;
-
-    if (count >= times) {
-      clearInterval(interval);
-    }
-  }, delay);
+    if (count >= 3) clearInterval(repeat);
+  }, 500);
 }
 
-// celular + desktop
-document.body.addEventListener("click", () => playRepeatedMoan(3));
-document.body.addEventListener("touchstart", () => playRepeatedMoan(3));
+// eventos mobile + desktop
+document.addEventListener("click", playRepeatedSound);
+document.addEventListener("touchstart", playRepeatedSound);
+
+// contador até sábado
+function atualizarTempo() {
+  const agora = new Date();
+  const sabado = new Date();
+  sabado.setDate(agora.getDate() + ((6 - agora.getDay() + 7) % 7));
+  sabado.setHours(0,0,0,0);
+
+  const diff = sabado - agora;
+
+  if (diff <= 0) {
+    document.getElementById("timer").innerText = "🔥 CHEGOU O SÁBADO 😈";
+    return;
+  }
+
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+
+  document.getElementById("timer").innerText =
+    `⏳ ${h}h ${m}m ${s}s`;
+}
+
+setInterval(atualizarTempo, 1000);
+atualizarTempo();
 </script>
+
+</body>
+</html>
