@@ -28,6 +28,62 @@ body {
   margin-bottom: 25px;
 }
 
+/* pisca vermelho */
+.flash {
+  animation: flashRed 0.35s infinite;
+}
+
+@keyframes flashRed {
+  0% { color: #fff; }
+  50% { color: #ff0033; }
+  100% { color: #fff; }
+}
+
+/* tremida */
+.shake {
+  animation: shake 0.2s infinite;
+}
+
+@keyframes shake {
+  0% { transform: translate(0); }
+  25% { transform: translate(-4px, 2px); }
+  50% { transform: translate(4px, -2px); }
+  75% { transform: translate(-3px, -1px); }
+  100% { transform: translate(0); }
+}
+
+/* glitch */
+.glitch {
+  position: relative;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  width: 100%;
+  opacity: 0.7;
+}
+.glitch::before {
+  color: #ff2d75;
+  animation: glitch1 0.2s infinite;
+}
+.glitch::after {
+  color: #00eaff;
+  animation: glitch2 0.15s infinite;
+}
+
+@keyframes glitch1 {
+  0% { transform: translate(2px, -2px); }
+  50% { transform: translate(-2px, 2px); }
+  100% { transform: translate(0); }
+}
+@keyframes glitch2 {
+  0% { transform: translate(-2px, 2px); }
+  50% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
 .timer {
   font-size: 26px;
   color: #ff2d75;
@@ -38,26 +94,14 @@ body {
   font-size: 14px;
   opacity: 0.7;
 }
-
-/* tremida */
-.shake {
-  animation: shake 0.25s infinite;
-}
-
-@keyframes shake {
-  0% { transform: translate(0); }
-  25% { transform: translate(-4px, 2px); }
-  50% { transform: translate(4px, -2px); }
-  75% { transform: translate(-3px, -1px); }
-  100% { transform: translate(0); }
-}
 </style>
 </head>
 
 <body>
 
 <div class="container" id="box">
-  <div class="text">
+  <div class="text glitch" id="text" data-text="VIVI… SE PREPARA 😏
+SÁBADO É SEM MISERICÓRDIA">
     VIVI… SE PREPARA 😏<br>
     SÁBADO É SEM MISERICÓRDIA
   </div>
@@ -71,69 +115,35 @@ let ctx;
 let unlocked = false;
 
 function unlockAudio() {
-  if (!ctx) {
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
   ctx.resume().then(() => unlocked = true);
 }
 
-// som “AIIIIIIHHH” longo
-function playAiiiihhh() {
-  if (!unlocked) {
-    unlockAudio();
-    return;
-  }
-
-  // vibração (iOS pode ignorar, Android funciona)
-  if (navigator.vibrate) navigator.vibrate([120, 80, 120]);
-
-  const box = document.getElementById("box");
-  box.classList.add("shake");
-
-  const now = ctx.currentTime;
-
+// UM "AIIIIIIHHH" (~4.5s)
+function singleAiiiihhh(startTime) {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   const filter = ctx.createBiquadFilter();
 
-  osc.type = "sawtooth"; // mais “voz”
-  osc.frequency.setValueAtTime(750, now);
-  osc.frequency.exponentialRampToValueAtTime(180, now + 2.4);
+  osc.type = "sawtooth";
+  osc.frequency.setValueAtTime(800, startTime);
+  osc.frequency.exponentialRampToValueAtTime(140, startTime + 4.5);
 
   filter.type = "lowpass";
-  filter.frequency.setValueAtTime(1200, now);
+  filter.frequency.setValueAtTime(1400, startTime);
 
-  gain.gain.setValueAtTime(0.001, now);
-  gain.gain.exponentialRampToValueAtTime(0.6, now + 0.15);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 2.4);
+  gain.gain.setValueAtTime(0.001, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.7, startTime + 0.3);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + 4.5);
 
   osc.connect(filter);
   filter.connect(gain);
   gain.connect(ctx.destination);
 
-  osc.start(now);
-  osc.stop(now + 2.4);
-
-  setTimeout(() => box.classList.remove("shake"), 2600);
+  osc.start(startTime);
+  osc.stop(startTime + 4.5);
 }
 
-// eventos corretos p/ iOS
-document.body.addEventListener("touchstart", playAiiiihhh, { passive: true });
-document.body.addEventListener("click", playAiiiihhh);
-
-// contador até sábado
-function atualizarTempo() {
-  const agora = new Date();
-  const sabado = new Date();
-  sabado.setDate(agora.getDate() + ((6 - agora.getDay() + 7) % 7));
-  sabado.setHours(0,0,0,0);
-
-  const diff = sabado - agora;
-
-  if (diff <= 0) {
-    document.getElementById("timer").innerText = "🔥 CHEGOU O SÁBADO 😈";
-    return;
-  }
-
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff %
+// TOCA 3 VEZES
+function playTripleAiiiihhh() {
+  if (!u
