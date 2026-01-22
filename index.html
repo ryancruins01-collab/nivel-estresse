@@ -15,78 +15,39 @@ body {
   justify-content: center;
   align-items: center;
   text-align: center;
-  overflow: hidden;
 }
 
 .container {
-  padding: 20px;
+  width: 90%;
+  max-width: 600px;
 }
 
 .text {
-  font-size: 42px;
-  line-height: 1.15;
+  font-size: 64px;
+  line-height: 1.1;
   margin-bottom: 25px;
 }
 
-/* pisca vermelho */
-.flash {
-  animation: flashRed 0.35s infinite;
-}
-
-@keyframes flashRed {
-  0% { color: #fff; }
-  50% { color: #ff0033; }
-  100% { color: #fff; }
-}
-
-/* tremida */
-.shake {
-  animation: shake 0.2s infinite;
-}
-
-@keyframes shake {
-  0% { transform: translate(0); }
-  25% { transform: translate(-4px, 2px); }
-  50% { transform: translate(4px, -2px); }
-  75% { transform: translate(-3px, -1px); }
-  100% { transform: translate(0); }
-}
-
-/* glitch */
-.glitch {
-  position: relative;
-}
-.glitch::before,
-.glitch::after {
-  content: attr(data-text);
-  position: absolute;
-  left: 0;
-  width: 100%;
-  opacity: 0.7;
-}
-.glitch::before {
-  color: #ff2d75;
-  animation: glitch1 0.2s infinite;
-}
-.glitch::after {
-  color: #00eaff;
-  animation: glitch2 0.15s infinite;
-}
-
-@keyframes glitch1 {
-  0% { transform: translate(2px, -2px); }
-  50% { transform: translate(-2px, 2px); }
-  100% { transform: translate(0); }
-}
-@keyframes glitch2 {
-  0% { transform: translate(-2px, 2px); }
-  50% { transform: translate(2px, -2px); }
-  100% { transform: translate(0); }
-}
-
 .timer {
-  font-size: 26px;
+  font-size: 28px;
+  margin-bottom: 20px;
   color: #ff2d75;
+}
+
+/* barra de progresso */
+.bar-bg {
+  width: 100%;
+  height: 20px;
+  background: #333;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #ff2d75, #ff6fae);
+  transition: width 0.5s linear;
 }
 
 .hint {
@@ -99,52 +60,87 @@ body {
 
 <body>
 
-<div class="container" id="box">
-  <div class="text glitch" id="text" data-text="VIVI… SE PREPARA 😏
-SÁBADO É SEM MISERICÓRDIA">
+<div class="container">
+  <div class="text">
     VIVI… SE PREPARA 😏<br>
     SÁBADO É SEM MISERICÓRDIA
   </div>
 
   <div class="timer" id="timer"></div>
+
+  <div class="bar-bg">
+    <div class="bar" id="bar"></div>
+  </div>
+
   <div class="hint">👆 toca na tela</div>
 </div>
 
 <script>
-let ctx;
-let unlocked = false;
+let audioUnlocked = false;
 
+// desbloqueio obrigatório do iOS
 function unlockAudio() {
-  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-  ctx.resume().then(() => unlocked = true);
+  if (!audioUnlocked) {
+    const u = new SpeechSynthesisUtterance(" ");
+    speechSynthesis.speak(u);
+    audioUnlocked = true;
+  }
 }
 
-// UM "AIIIIIIHHH" (~4.5s)
-function singleAiiiihhh(startTime) {
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  const filter = ctx.createBiquadFilter();
+// fala irônica a cada clique
+function falar() {
+  if (!audioUnlocked) {
+    unlockAudio();
+    return;
+  }
 
-  osc.type = "sawtooth";
-  osc.frequency.setValueAtTime(800, startTime);
-  osc.frequency.exponentialRampToValueAtTime(140, startTime + 4.5);
+  const fala = new SpeechSynthesisUtterance("Ainn Ryan machuca");
+  fala.lang = "pt-BR";
+  fala.rate = 0.85;
+  fala.pitch = 1.1;
+  fala.volume = 1;
 
-  filter.type = "lowpass";
-  filter.frequency.setValueAtTime(1400, startTime);
-
-  gain.gain.setValueAtTime(0.001, startTime);
-  gain.gain.exponentialRampToValueAtTime(0.7, startTime + 0.3);
-  gain.gain.exponentialRampToValueAtTime(0.001, startTime + 4.5);
-
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(ctx.destination);
-
-  osc.start(startTime);
-  osc.stop(startTime + 4.5);
+  speechSynthesis.speak(fala);
 }
 
-// TOCA 3 VEZES
-function playTripleAiiiihhh() {
-  if (!u
+document.body.addEventListener("touchstart", falar, { passive: true });
+document.body.addEventListener("click", falar);
 
+// contador REAL até sábado + barra
+function atualizarTempo() {
+  const agora = new Date();
+
+  const inicioSemana = new Date(agora);
+  inicioSemana.setDate(agora.getDate() - agora.getDay());
+  inicioSemana.setHours(0,0,0,0);
+
+  const sabado = new Date(inicioSemana);
+  sabado.setDate(inicioSemana.getDate() + 6);
+
+  const totalSemana = sabado - inicioSemana;
+  const restante = sabado - agora;
+
+  if (restante <= 0) {
+    document.getElementById("timer").innerText =
+      "🔥 CHEGOU O SÁBADO 😈";
+    document.getElementById("bar").style.width = "0%";
+    return;
+  }
+
+  const dias = Math.floor(restante / (1000 * 60 * 60 * 24));
+  const horas = Math.floor((restante / (1000 * 60 * 60)) % 24);
+  const minutos = Math.floor((restante / (1000 * 60)) % 60);
+
+  document.getElementById("timer").innerText =
+    `⏳ ${dias}d ${horas}h ${minutos}m`;
+
+  const progresso = (restante / totalSemana) * 100;
+  document.getElementById("bar").style.width = progresso + "%";
+}
+
+setInterval(atualizarTempo, 1000);
+atualizarTempo();
+</script>
+
+</body>
+</html>
