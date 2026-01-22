@@ -15,6 +15,7 @@ body {
   justify-content: center;
   align-items: center;
   text-align: center;
+  overflow: hidden;
 }
 
 .container {
@@ -37,12 +38,25 @@ body {
   font-size: 14px;
   opacity: 0.7;
 }
+
+/* tremida */
+.shake {
+  animation: shake 0.25s infinite;
+}
+
+@keyframes shake {
+  0% { transform: translate(0); }
+  25% { transform: translate(-4px, 2px); }
+  50% { transform: translate(4px, -2px); }
+  75% { transform: translate(-3px, -1px); }
+  100% { transform: translate(0); }
+}
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="container" id="box">
   <div class="text">
     VIVI… SE PREPARA 😏<br>
     SÁBADO É SEM MISERICÓRDIA
@@ -53,43 +67,59 @@ body {
 </div>
 
 <script>
+let ctx;
 let unlocked = false;
-let audio;
-
-// som LONGO, engraçado, permitido e leve
-const soundUrl =
-  "https://actions.google.com/sounds/v1/cartoon/descending_whistle_3.ogg";
 
 function unlockAudio() {
-  if (!unlocked) {
-    audio = new Audio(soundUrl);
-    audio.volume = 1.0;
-    audio.play().then(() => {
-      audio.pause();
-      audio.currentTime = 0;
-      unlocked = true;
-    }).catch(() => {});
+  if (!ctx) {
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
   }
+  ctx.resume().then(() => unlocked = true);
 }
 
-function playRepeatedSound() {
+// som “AIIIIIIHHH” longo
+function playAiiiihhh() {
   if (!unlocked) {
     unlockAudio();
     return;
   }
 
-  let count = 0;
-  const repeat = setInterval(() => {
-    audio.currentTime = 0;
-    audio.play();
-    count++;
-    if (count >= 3) clearInterval(repeat);
-  }, 500);
+  // vibração (iOS pode ignorar, Android funciona)
+  if (navigator.vibrate) navigator.vibrate([120, 80, 120]);
+
+  const box = document.getElementById("box");
+  box.classList.add("shake");
+
+  const now = ctx.currentTime;
+
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+
+  osc.type = "sawtooth"; // mais “voz”
+  osc.frequency.setValueAtTime(750, now);
+  osc.frequency.exponentialRampToValueAtTime(180, now + 2.4);
+
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(1200, now);
+
+  gain.gain.setValueAtTime(0.001, now);
+  gain.gain.exponentialRampToValueAtTime(0.6, now + 0.15);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 2.4);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(now);
+  osc.stop(now + 2.4);
+
+  setTimeout(() => box.classList.remove("shake"), 2600);
 }
 
-// eventos mobile + desktop
-document.addEventListener("click", playRepeatedSound);
-document.addEventListener("touchstart", playRepeatedSound);
+// eventos corretos p/ iOS
+document.body.addEventListener("touchstart", playAiiiihhh, { passive: true });
+document.body.addEventListener("click", playAiiiihhh);
 
 // contador até sábado
 function atualizarTempo() {
@@ -106,16 +136,4 @@ function atualizarTempo() {
   }
 
   const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-
-  document.getElementById("timer").innerText =
-    `⏳ ${h}h ${m}m ${s}s`;
-}
-
-setInterval(atualizarTempo, 1000);
-atualizarTempo();
-</script>
-
-</body>
-</html>
+  const m = Math.floor((diff %
