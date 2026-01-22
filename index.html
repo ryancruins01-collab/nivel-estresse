@@ -2,16 +2,13 @@
 let audioUnlocked = false;
 let audio;
 
-const sounds = [
-  "https://actions.google.com/sounds/v1/cartoon/boing.ogg",
-  "https://actions.google.com/sounds/v1/cartoon/pop.ogg",
-  "https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg"
-];
+// som vocal/cartoon permitido
+const soundUrl =
+  "https://actions.google.com/sounds/v1/human_voices/ahh_female.ogg";
 
 function unlockAudio() {
   if (!audioUnlocked) {
-    audio = new Audio();
-    audio.src = sounds[0];
+    audio = new Audio(soundUrl);
     audio.volume = 1.0;
     audio.play().then(() => {
       audio.pause();
@@ -21,17 +18,27 @@ function unlockAudio() {
   }
 }
 
-function playSound() {
+// repete o "aiiiihhh" várias vezes
+function playRepeatedMoan(times = 3, delay = 450) {
   if (!audioUnlocked) {
     unlockAudio();
     return;
   }
 
-  audio.src = sounds[Math.floor(Math.random() * sounds.length)];
-  audio.currentTime = 0;
-  audio.play();
+  let count = 0;
+
+  const interval = setInterval(() => {
+    audio.currentTime = 0;
+    audio.play();
+    count++;
+
+    if (count >= times) {
+      clearInterval(interval);
+    }
+  }, delay);
 }
 
-document.body.addEventListener("click", playSound);
-document.body.addEventListener("touchstart", playSound);
+// celular + desktop
+document.body.addEventListener("click", () => playRepeatedMoan(3));
+document.body.addEventListener("touchstart", () => playRepeatedMoan(3));
 </script>
