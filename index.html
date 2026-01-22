@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Contador Safado Oficial</title>
+<title>Sábado 😏</title>
 
 <style>
 * {
@@ -12,82 +12,34 @@
 }
 
 body {
-  background: #0b0b0b;
+  background: #000;
   color: #fff;
   font-family: Impact, Arial Black, sans-serif;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
   text-align: center;
   cursor: pointer;
 }
 
 .container {
-  max-width: 500px;
-}
-
-.face {
-  width: 180px;
-  height: 180px;
-  background: #ffcc99;
-  border-radius: 50%;
-  margin: 0 auto 20px;
-  position: relative;
-}
-
-.eye {
-  width: 20px;
-  height: 20px;
-  background: #000;
-  border-radius: 50%;
-  position: absolute;
-  top: 55px;
-}
-
-.eye.left { left: 50px; }
-.eye.right { right: 50px; }
-
-.wink {
-  width: 25px;
-  height: 5px;
-  background: #000;
-  position: absolute;
-  top: 65px;
-  right: 50px;
-}
-
-.mouth {
-  width: 60px;
-  height: 30px;
-  background: #000;
-  border-radius: 0 0 40px 40px;
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.tongue {
-  width: 30px;
-  height: 20px;
-  background: #ff4d6d;
-  border-radius: 0 0 20px 20px;
-  margin: 0 auto;
+  padding: 20px;
 }
 
 .text {
-  font-size: 36px;
-  margin-bottom: 15px;
+  font-size: 44px;
+  line-height: 1.15;
+  margin-bottom: 25px;
 }
 
 .timer {
-  font-size: 22px;
-  color: #ff4d6d;
+  font-size: 26px;
+  color: #ff2d75;
 }
 
 .hint {
-  margin-top: 15px;
+  margin-top: 20px;
   font-size: 14px;
   opacity: 0.7;
 }
@@ -97,34 +49,26 @@ body {
 <body onclick="playSound()">
 
 <div class="container">
-
-  <div class="face">
-    <div class="eye left"></div>
-    <div class="wink"></div>
-    <div class="mouth">
-      <div class="tongue"></div>
-    </div>
+  <div class="text">
+    VIVI… SE PREPARA 😏<br>
+    SÁBADO É SEM MISERICÓRDIA
   </div>
 
-  <div class="text" id="msg">SEGURA ESSA ANSIEDADE 😏</div>
   <div class="timer" id="timer"></div>
-  <div class="hint">👆 clica aí sem vergonha</div>
-
+  <div class="hint">👆 toca na tela</div>
 </div>
 
-<audio id="sound">
-  <source src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg">
-</audio>
+<audio id="audio"></audio>
 
 <script>
 const sounds = [
   "https://actions.google.com/sounds/v1/cartoon/boing.ogg",
-  "https://actions.google.com/sounds/v1/cartoon/clang.ogg",
-  "https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"
+  "https://actions.google.com/sounds/v1/cartoon/pop.ogg",
+  "https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg"
 ];
 
 function playSound() {
-  const audio = document.getElementById("sound");
+  const audio = document.getElementById("audio");
   audio.src = sounds[Math.floor(Math.random() * sounds.length)];
   audio.play();
 }
@@ -140,7 +84,6 @@ function atualizarTempo() {
 
   if (diff <= 0) {
     document.getElementById("timer").innerText = "🔥 CHEGOU O SÁBADO 😈";
-    document.getElementById("msg").innerText = "AGORA JÁ ERA 😏";
     return;
   }
 
@@ -149,7 +92,7 @@ function atualizarTempo() {
   const s = Math.floor((diff % 60000) / 1000);
 
   document.getElementById("timer").innerText =
-    `⏳ ${h}h ${m}m ${s}s pro sábado`;
+    `⏳ ${h}h ${m}m ${s}s`;
 }
 
 setInterval(atualizarTempo, 1000);
